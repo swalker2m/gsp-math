@@ -1,45 +1,44 @@
-name: Label PRs from allowed users with skip-sc
+name: Label PRs with skip-sc
 
 on:
   pull_request:
     types: [opened, reopened, synchronize]
 
 jobs:
-  label-if-author-and-branch:
+  apply-skip-sc-label:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
     steps:
-      - name: Add skip-sc label if author is in list and branch starts with sc-
+      - name: Add skip-sc label if author is in the list and branch starts with sc-
         uses: actions/github-script@v7
         with:
           script: |
             const pr = context.payload.pull_request;
             const prAuthor = pr.user.login;
             const branchName = pr.head.ref;
-            const allowedUsers = ['your-github-username', 'teammate1', 'teammate2']; // ← replace with actual usernames
-            const labelToAdd = 'skip-sc';
+            const relevantUsers = ['swalker2m'];
+            const skipScLabel = 'skip-sc';
 
             if (!branchName.startsWith('sc-')) {
               console.log(`Branch '${branchName}' does not start with 'sc-'; skipping.`);
               return;
             }
 
-            if (!allowedUsers.includes(prAuthor)) {
-              console.log(`PR author '${prAuthor}' not in allowed list; skipping.`);
+            if (!relevantUsers.includes(prAuthor)) {
+              console.log(`PR author '${prAuthor}' not in the list; skipping.`);
               return;
             }
 
             const labels = pr.labels.map(l => l.name);
-            if (!labels.includes(labelToAdd)) {
+            if (!labels.includes(skipScLabel)) {
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: pr.number,
-                labels: [labelToAdd],
+                labels: [skipScLabel],
               });
-              console.log(`Added label "${labelToAdd}" to PR #${pr.number}`);
+              console.log(`Added label "${skipScLabel}" to PR #${pr.number}`);
             } else {
-              console.log(`Label "${labelToAdd}" already present on PR #${pr.number}`);
+              console.log(`Label "${skipScLabel}" already present on PR #${pr.number}`);
             }
-
